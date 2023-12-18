@@ -1,6 +1,6 @@
 # AOIP Evaluation
 
-# Setup AWS Parallel Cluster (from your local machine)
+# Setup AWS Parallel Cluster (on your local machine)
 1. install cli
 ```
 pip install aws-parallelcluster
@@ -41,5 +41,22 @@ Network Configuration [Head node in a public subnet and compute fleet in a priva
 
 # Cluster Environment Setup
 1. Download the server_side code on the cluster head node
-2. 
+2. Run `./cluster-setup-env.sh`. Optionally run `./enh_setup.sh` to setup the environment for the enhancement model.
+    * test your installation by running `python -m voip_eval.MultipleEvaluation` under the `server_side` directory
+3. Setup AWS profile on the cluster head node using `aws configure`
+4. submit slurm job scripts
+    1. prepare all file ids from s3 bucket in a txt file. split if too long using `./split_txt.sh [txt_file] [chunk_size]`
+    2. This script implements a simple sleeping mechanism to submit array jobs to slurm queue in order not to crash the slurm scheduler.
+    ```
+        ./submit_jobs.sh JOB_ARRAY_SCRIPT TODO_PREFIX [SCRIPT_ARGS]
+        1. JOB_ARRAY_SCRIPT: the script to run on each file id
+        2. TODO_PREFIX: the prefix of the txt file containing all file ids (because we split one into multiple files)
+        3. SCRIPT_ARGS: the arguments to pass to the script
+    ```
+5. Choices of script includes
+    1. `postpro_eval-slurm.sh`: run post-processing and  evaluation
+    2. `eval-only-slurm.sh`: run evaluation only
+    3. `slurm-enhan_eval.sh`: run enhancement and evaluation (cpu only)
+    4. `gpu-slurm-enhan_eval.sh`: run enhancement and evaluation (gpu)
+
 

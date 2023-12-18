@@ -11,6 +11,11 @@
 #SBATCH --error=logs-enh/slurm-%A_%a.err
 
 # set -e
+if [ $# -lt 4 ]; then
+    echo "Usage: $0 TODO_LIST BUCKET SPLIT_S3_PREFIX VER "
+    exit 1
+fi
+
 set -u
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate voip-eval
@@ -22,31 +27,32 @@ sudo mkdir -p /data
 sudo chmod -R go+rwx /data
 df -h /data
 
+TODO_LIST=$1
+BUCKET=$2
+SPLIT_S3_PREFIX=$3
+VER=$4
+
 SPLIT='test'
 
-BUCKET="ssh-new-test"
-RAW_S3_PREFIX="ssh-nov-1"
 
 DATA_BASE='/data'
-RAW_DIR=$DATA_BASE/raw
-mkdir -p $RAW_DIR
+
 
 ###### Validate Arguments ######
-VER=$1 # this is the version of relayed audio we are enhancing (clean/noisy)
 if [[ -z "${VER-}" ]]; then
   echo "The VER (clean/noisy) to eval is not defined."
   exit 1
 fi
-TODO_LIST=$2
-if [ ! -f $2 ];then
-	echo "Error: pending.txt not exist"
+
+if [ ! -f $TODO_LIST ];then
+	echo "Error: ${TODO_LIST} not exist"
 	exit 1
 fi
 #################################
 
 SRC_PATTERN="src_${SPLIT}/src_${VER}"
 SRC_EVAL_PATTERN="src_${SPLIT}/src_clean"  #always use clean for eval!
-SPLIT_OG_FILE="s3://raw-src-files/src_${SPLIT}.zip"
+SPLIT_OG_FILE="s3://${BUCKET}/src_${SPLIT}.zip"
 PROFILE="default"
 
 
@@ -78,8 +84,10 @@ if [[ ! -d /home/ubuntu/data/results ]];then
 	mkdir -p /home/ubuntu/data/results
 fi
 
+# create a short cut to pull results to headnode
 rm -f "${DATA_BASE}"/results
 ln -sf /home/ubuntu/data/results "${DATA_BASE}"
+
 SPLIT_DIR_PATTERN="relayed-splitted-${VER}"
 mkdir -p "${DATA_BASE}/${SPLIT_DIR_PATTERN}"
 

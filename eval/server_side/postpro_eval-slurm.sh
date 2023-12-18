@@ -10,6 +10,12 @@
 #SBATCH --output=logs/slurm-%A_%a.out
 #SBATCH --error=logs/slurm-%A_%a.err
 
+# Check if at least four arguments are provided
+if [ $# -lt 4 ]; then
+    echo "Usage: $0 TODO_LIST BUCKET SPLIT_S3_PREFIX VER "
+    exit 1
+fi
+
 # set -e
 set -u
 source ~/miniconda3/etc/profile.d/conda.sh
@@ -22,11 +28,11 @@ df -h /data
 
 SPLIT='test'
 
+TODO_LIST=$1
+BUCKET=$2
+RAW_S3_PREFIX=$3
+VER=$4
 
-BUCKET=$1
-RAW_S3_PREFIX=$2
-VER=$3
-TODO_LIST=$4
 
 if [ ! -f $TODO_LIST ];then
 	echo "Error: ${TODO_LIST} not exist"
