@@ -43,8 +43,10 @@ Network Configuration [Head node in a public subnet and compute fleet in a priva
 1. Download the server_side code on the cluster head node
 2. Run `./cluster-setup-env.sh`. Optionally run `./enh_setup.sh` to setup the environment for the enhancement model.
     * test your installation by running `python -m voip_eval.MultipleEvaluation` under the `server_side` directory
-3. Setup AWS profile on the cluster head node using `aws configure`
-4. submit slurm job scripts
+
+# Run Evaluation
+1. Setup AWS profile on the cluster head node using `aws configure`
+2. submit slurm job scripts
     1. prepare all file ids from s3 bucket in a txt file. split if too long using `./split_txt.sh [txt_file] [chunk_size]`
     2. This script implements a simple sleeping mechanism to submit array jobs to slurm queue in order not to crash the slurm scheduler.
     ```
@@ -53,10 +55,16 @@ Network Configuration [Head node in a public subnet and compute fleet in a priva
         2. TODO_PREFIX: the prefix of the txt file containing all file ids (because we split one into multiple files)
         3. SCRIPT_ARGS: the arguments to pass to the script
     ```
-5. Choices of script includes
+3. Choices of script includes for relative evaluation metrics.
     1. `postpro_eval-slurm.sh`: run post-processing and  evaluation
     2. `eval-only-slurm.sh`: run evaluation only
     3. `slurm-enhan_eval.sh`: run enhancement and evaluation (cpu only)
     4. `gpu-slurm-enhan_eval.sh`: run enhancement and evaluation (gpu)
+
+    These scripts produces a results csv file for each file_id. To get a summary results, you can run `python print_results.py --dataprefix [path/to/results/csv/files] --eval_pattern [eval_pattern]` where `eval_pattern` is a piece of string in the csv filename indicating the version of audio this is (e.g. clean/noisy/clean-enhan/noisy-enhan...) that you defined when you run the job scripts.
+
+    The splitting and evaluation codes uses scripts inside `voip_eval/` directory. You can modify the scripts to change the evaluation metrics. The default is to use `pesq` and `stoi` for speech quality evaluation. You should run these scripts from the `server_side` directory. If you move your slurm scripts elsewhere, make sure to update the script paths accordingly.
+
+    
 
 
